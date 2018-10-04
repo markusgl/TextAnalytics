@@ -1,8 +1,11 @@
+"""
+Der Graph des Manitou
+"""
+
 #import de_core_news_sm
 import re
-from nltk.tokenize import sent_tokenize
-from nltk.tag import StanfordNERTagger
 from nltk.tokenize import word_tokenize
+from network_graph import NetworkGraph
 
 # read the book
 with open('./data/Winnetou_Band3.txt', 'r', encoding='utf-8') as f:
@@ -21,10 +24,8 @@ for row in book_data.splitlines():
 clean_data = re.sub(r'\W', ' ', clean_data) # remove non-word characters
 clean_data = re.sub(r'\s{2,}', ' ', clean_data)  # remove two or more consecutive whitespaces
 
-
 #print(len(book_data))
 #print(len(clean_data))
-
 
 """
 Extract every names using NER
@@ -44,35 +45,40 @@ print(persons_set)
 """
 
 # manually created list with persons
-persons = ['Winnetou', 'Old Shatterhand', 'Sam Hawkens', 'Bloody Fox', 'Quick Panther', 'White Buffallo', 'Rollins']
+persons = ['Charles', 'Capitano', 'Bob', 'Alma', 'Buller', 'Clay', 'Charley', 'Tony', 'Summer', 'Conchez', 'Ebersbach',
+           'Eulalia', 'Don Fernando', 'Fernando', 'Gates', 'Elvira', 'Gonzalez', 'Henrico', 'Gonzalez', 'Samuel', 'Haller',
+           'Hi-lah-dih', 'Willy', 'Hillmann', 'Hoblyn', 'Holfert', 'Inta', 'Kakho-oto', 'Ka-wo-mien', 'Ko-itse',
+           'Ko-tu-cho', 'Ma-ram', 'Allan', 'Bernard', 'Ma-ti-ru', 'Bill', 'Meinert', 'Fred', 'Morgan', 'Patrik',
+           'Morgan', 'Ohiomann', 'Ohlers', 'Firehand', 'Shatterhand', 'Pida', 'Pidas', 'Squaw', 'Rollins', 'Rudge',
+           'Hawkens', 'Sanchez', 'Sans-ear', 'Santer', 'Shelley', 'Summer', 'Sus-Homascha', 'Tangua', 'Til-Lata',
+           'To-kei-chun', 'Walker', 'Williams', 'Winnetou', 'Yato-Ka']
 
+
+relationship_dict = {}
+tmp_list = []
 tokenized_data = word_tokenize(clean_data)
-# to check if tokenization works correct, print the first ten tokens
-#print("Die ersten 10 Tokens: {}".format(tokenized_data[:10]))
-#print("Gestamtanzahl Tokens: {}".format(len(tokenized_data)))
+substring_length = 10
 
-reltionship_dict ={}
-word_window = ""
-count = 0
-for word in tokenized_data:
-    word_window += word + ' '
-    count += 1
-    if count % 15 == 0:
-        person_count = 0
+ng = NetworkGraph()
 
-        tmp_list = []
-        for person in persons:
-            if person in word_window:
-                tmp_list.append(person)
+# generate 15 words substring
+for i in range(len(tokenized_data)):
+    if tokenized_data[i] in persons:
+        found_person = tokenized_data[i]
+        tmp_substring = tokenized_data[i-substring_length:i-1] + tokenized_data[i+1:i+substring_length]
 
-        if len(tmp_list) > 1: # more than one person in window found
-            for i in range(len(tmp_list)):
-                dict_key = tmp_list[i] + "_" + tmp_list[i+1]
-                if reltionship_dict[dict_key]:
-                    reltionship_dict[dict_key] += 1
+        for word in tmp_substring:
+            if word in persons:
+                ng.add_edge(found_person, word) #
+                dict_key = found_person + "_" + word
+                if dict_key in relationship_dict:
+                    relationship_dict[dict_key] += 1
                 else:
-                    reltionship_dict[dict_key] = 1
-        substring_words = ""
+                    relationship_dict[dict_key] = 1
+
+ng.draw_network()
+print(relationship_dict)
+
 
 """
 Sliding window of 15 words

@@ -4,8 +4,11 @@ Der Graph des Manitou
 
 #import de_core_news_sm
 import re
+import csv
+
 from nltk.tokenize import word_tokenize
 from network_graph import NetworkGraph
+from neo4j_graph import Neo4jGraph
 
 # read the book
 with open('./data/Winnetou_Band3.txt', 'r', encoding='utf-8') as f:
@@ -45,13 +48,12 @@ print(persons_set)
 """
 
 # manually created list with persons
-persons = ['Charles', 'Capitano', 'Bob', 'Alma', 'Buller', 'Clay', 'Charley', 'Tony', 'Summer', 'Conchez', 'Ebersbach',
-           'Eulalia', 'Don Fernando', 'Fernando', 'Gates', 'Elvira', 'Gonzalez', 'Henrico', 'Gonzalez', 'Samuel', 'Haller',
-           'Hi-lah-dih', 'Willy', 'Hillmann', 'Hoblyn', 'Holfert', 'Inta', 'Kakho-oto', 'Ka-wo-mien', 'Ko-itse',
-           'Ko-tu-cho', 'Ma-ram', 'Allan', 'Bernard', 'Ma-ti-ru', 'Bill', 'Meinert', 'Fred', 'Morgan', 'Patrik',
-           'Morgan', 'Ohiomann', 'Ohlers', 'Firehand', 'Shatterhand', 'Pida', 'Pidas', 'Squaw', 'Rollins', 'Rudge',
-           'Hawkens', 'Sanchez', 'Sans-ear', 'Santer', 'Shelley', 'Summer', 'Sus-Homascha', 'Tangua', 'Til-Lata',
-           'To-kei-chun', 'Walker', 'Williams', 'Winnetou', 'Yato-Ka']
+persons = ['Alma', 'Bob', 'Buller', 'Capitano', 'Clay', 'Conchez', 'Conchez', 'Ebersbach', 'Eulalia', 'Fernando',
+            'Gates', 'Elvira', 'Henrico', 'Haller', 'Hawkens', 'Hi-lah-dih', 'Hillmann', 'Hoblyn', 'Holfert',
+            'Inta', 'Kakho-oto', 'Ka-wo-mien', 'Ko-itse', 'Ko-tu-cho', 'Ma-ram', 'Allan', 'Bernard', 'Ma-ti-ru',
+            'Meinert', 'Fred', 'Patrik', 'Ohiomann', 'Firehand', 'Shatterhand', 'Pida', 'Squaw', 'Rollins',
+            'Sanchez', 'Sans-ear', 'Santer', 'Shelley', 'Summer', 'Tony', 'Sus-Homascha', 'Tangua', 'Til-Lata',
+            'To-kei-chun', 'Walker', 'Williams', 'Winnetou', 'Yato-Ka']
 
 
 relationship_dict = {}
@@ -59,7 +61,7 @@ tmp_list = []
 tokenized_data = word_tokenize(clean_data)
 substring_length = 10
 
-ng = NetworkGraph()
+
 
 # generate 15 words substring
 for i in range(len(tokenized_data)):
@@ -68,16 +70,49 @@ for i in range(len(tokenized_data)):
         tmp_substring = tokenized_data[i-substring_length:i-1] + tokenized_data[i+1:i+substring_length]
 
         for word in tmp_substring:
-            if word in persons:
-                ng.add_edge(found_person, word) #
+            if word in persons and word != found_person:
+                #ng.add_edge(found_person, word) # add to networkx
                 dict_key = found_person + "_" + word
                 if dict_key in relationship_dict:
                     relationship_dict[dict_key] += 1
                 else:
                     relationship_dict[dict_key] = 1
 
+#ng.draw_network()
+#print(relationship_dict)
+
+with open('winnetou3_persons.csv', 'w', newline='') as csvfile:
+    writer = csv.writer(csvfile)
+
+    csv_list = []
+    for key, value in relationship_dict.items():
+        tmp_list = key.split('_')
+        tmp_list.append(str(value))
+        csv_list.append(tmp_list)
+
+    writer.writerows(csv_list)
+
+# Draw graph
+ng = NetworkGraph()
+neo4j_graph = Neo4jGraph()
+with open('winnetou3_persons.csv', 'r', newline='') as csvfile:
+    reader = csv.reader(csvfile, delimiter=',')
+    for row in reader:
+        print(row)
+        ng.add_edge(row[0], row[1], weight=int(row[2]))
+
+        first_node = neo4j_graph.get_node_by_name(str(row[0]))
+        second_node = neo4j_graph.get_node_by_name(str(row[1]))
+
+        if not first_node:
+            first_node = neo4j_graph.add_node_by_name(str(row[0]))
+        if not second_node:
+            second_node = neo4j_graph.add_node_by_name(str(row[1]))
+
+        neo4j_graph.add_relationship(first_node, second_node)
+
+
 ng.draw_network()
-print(relationship_dict)
 
 
 """

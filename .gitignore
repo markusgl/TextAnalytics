@@ -104,3 +104,9 @@ venv.bak/
 .mypy_cache/
 
 .idea
+
+blablub.py
+winnetou3_persons.csv
+
+# credential files
+neo4j_creds.json

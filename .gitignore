@@ -106,7 +106,7 @@ venv.bak/
 .idea
 
 blablub.py
-winnetou3_persons.csv
+*.csv
 
 # credential files
 neo4j_creds.json

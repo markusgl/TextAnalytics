@@ -48,13 +48,57 @@ print(persons_set)
 """
 
 # manually created list with persons
-persons = ['Alma', 'Bob', 'Buller', 'Capitano', 'Clay', 'Conchez', 'Conchez', 'Ebersbach', 'Eulalia', 'Fernando',
-            'Gates', 'Elvira', 'Henrico', 'Haller', 'Hawkens', 'Hi-lah-dih', 'Hillmann', 'Hoblyn', 'Holfert',
-            'Inta', 'Kakho-oto', 'Ka-wo-mien', 'Ko-itse', 'Ko-tu-cho', 'Ma-ram', 'Allan', 'Bernard', 'Ma-ti-ru',
-            'Meinert', 'Fred', 'Patrik', 'Ohiomann', 'Firehand', 'Shatterhand', 'Pida', 'Squaw', 'Rollins',
-            'Sanchez', 'Sans-ear', 'Santer', 'Shelley', 'Summer', 'Tony', 'Sus-Homascha', 'Tangua', 'Til-Lata',
-            'To-kei-chun', 'Walker', 'Williams', 'Winnetou', 'Yato-Ka']
-
+persons_dict = {'Alma': ['Alma'],
+                'Bob': ['Bob'],
+                'Buller': ['Fred Buller', 'Buller'],
+                'Capitano': ['Capitano'],
+                'Clay': ['Clay'],
+                'Conchez': ['Conchez'],
+                'Auguste': ['Gustel Ebersbach', 'Ebersbachs Gustel', 'Ebersbach'],
+                'Eulalia': ['Eulalia'],
+                'Fernando': ['Don Fernando'],
+                'Gates': ['Gates'],
+                'ElviraG.': ['Donna Elvira de Gonzalez', 'Donna Elvira', 'Elvira de Gonzalez'],
+                'HenricG.': ['Sennor Henrico Gonzalez', 'Sennor Henrico', 'Henrico Gonzalez'],
+                'Haller': ['Samuel Haller', 'Haller'],
+                'SamHawkens': ['Sam Hawkens', 'Sam', 'Sams'],
+                'Hi-Iah-dih': ['Hi-Iah-dih'],
+                'V.Hillmann': ['Vater Hillmann', 'alte Hillmann', 'Hillmann'],
+                'W.Hillmann': ['Willy', 'jungen Hillmann', 'junge Hillmann'],
+                'F.HillmannJung': ['Frau Willys'],
+                'Hoblyn': ['Hoblyn'],
+                'Holfert': ['Holfert'],
+                'Inta': ['Inta'],
+                'Kakho-oto': ['Kakho-oto'],
+                'Ka-wo-mien': ['Ka-wo-mien'],
+                'Ko-itse': ['Ko-itse'],
+                'Ko-tu-cho': ['Ko-tu-cho'],
+                'Ma-ram': ['Ma-ram'],
+                'A.Marshall': ['Juwelier Marshall'],
+                'B.Marshall': ['Bernard Marshall', 'Bernard Marshall', 'Bernards', 'Marshall'],
+                'Ma-ti-ru': ['Ma-ti-ru'], 'B.Meinert': ['Bill Meinert'],
+                'F.Morgan': ['Fred Morgan', 'Morgan'],
+                'P.Morgan': ['Patrik Morgan'],
+                'Ohiamann': ['Ohiomann'],
+                'Ohlers': ['Ohlers'],
+                'OldShatterhand': ['Old Shatterhand'],
+                'Pida': ['Pida'],
+                'PidasSquaw': ['Pidas Squaw'],
+                'Rudge': ['Rudge'],
+                'Sanchez': ['Sanchez'],
+                'Sans-ear': ['Sans-ear'],
+                'Santer': ['Santer'],
+                'Shelley': ['Shelley'],
+                'Summer': ['Summer'],
+                'Sus-Homascha': ['Sus-Homascha'],
+                'Tangua': ['Tangua'],
+                'Til-Lata': ['Til-Lata'],
+                'To-kei-chun': ['To-kei-chun'],
+                'F.Walker': ['Fred Walker', 'Walker'],
+                'Williams': ['Williams'],
+                'Winnetou': ['Winnetou'],
+                'Yato-Ka': ['Yato-Ka']
+                }
 
 relationship_dict = {}
 tmp_list = []
@@ -62,8 +106,44 @@ tokenized_data = word_tokenize(clean_data)
 substring_length = 10
 
 
+def search_persons(tokenized_string, primary_person):
+    for i in range(len(tokenized_string)):
+        for key, value in persons_dict.items():
+            if tokenized_string[i] in value and key != primary_person:
+                dict_key = primary_person + '_' + key
+                if dict_key in relationship_dict.keys():
+                    relationship_dict[dict_key] += 1
+                else:
+                    relationship_dict[dict_key] = 1
+            elif i < len(tokenized_string)-1:
+                if tokenized_string[i] + tokenized_string[i + 1] in value and key != primary_person:
+                    dict_key = primary_person + '_' + key
+                    if dict_key in relationship_dict.keys():
+                        relationship_dict[dict_key] += 1
+                    else:
+                        relationship_dict[dict_key] = 1
 
-# generate 15 words substring
+# TODO recursive call
+
+print("Tokens: {}".format(len(tokenized_data)))
+for i in range(len(tokenized_data)):
+    for key, value in persons_dict.items():
+        if tokenized_data[i] in value:
+            found_person = key
+            tmp_substring = tokenized_data[i - substring_length:i] + tokenized_data[i:i + substring_length]
+            search_persons(tmp_substring, found_person)
+        elif i < len(tokenized_data)-1:
+            if tokenized_data[i]+tokenized_data[i+1] in value:
+                found_person = key
+                tmp_substring = tokenized_data[i - substring_length:i] + tokenized_data[i:i + substring_length]
+                search_persons(tmp_substring, found_person)
+
+
+print(relationship_dict)
+
+
+#search through tokenized text - OLD VERSION iterate once through tokenized data
+"""
 for i in range(len(tokenized_data)):
     if tokenized_data[i] in persons:
         found_person = tokenized_data[i]
@@ -80,8 +160,8 @@ for i in range(len(tokenized_data)):
 
 #ng.draw_network()
 #print(relationship_dict)
-
-with open('winnetou3_persons.csv', 'w', newline='') as csvfile:
+"""
+with open('winnetou3_persons_new.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
 
     csv_list = []
@@ -92,15 +172,22 @@ with open('winnetou3_persons.csv', 'w', newline='') as csvfile:
 
     writer.writerows(csv_list)
 
-# Draw graph
+# Draw graph with networkx
 ng = NetworkGraph()
-neo4j_graph = Neo4jGraph()
-with open('winnetou3_persons.csv', 'r', newline='') as csvfile:
+with open('winnetou3_persons_new.csv', 'r', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     for row in reader:
-        print(row)
         ng.add_edge(row[0], row[1], weight=int(row[2]))
 
+ng.draw_network()
+
+
+# Save graph in Neo4j
+
+neo4j_graph = Neo4jGraph()
+with open('winnetou3_persons_new.csv', 'r', newline='') as csvfile:
+    reader = csv.reader(csvfile, delimiter=',')
+    for row in reader:
         first_node = neo4j_graph.get_node_by_name(str(row[0]))
         second_node = neo4j_graph.get_node_by_name(str(row[1]))
 
@@ -112,28 +199,3 @@ with open('winnetou3_persons.csv', 'r', newline='') as csvfile:
         neo4j_graph.add_relationship(first_node, second_node)
 
 
-ng.draw_network()
-
-
-"""
-Sliding window of 15 words
-
-# test if it works
-for i in range(10):
-    tmp_list = tokenized_data[i:i+15]
-    print(tmp_list)
-
-relationship_dict = {}
-for i in range(len(tokenized_data)):
-    tmp_list = tokenized_data[i:i+20]
-    #[token for token in tmp_list if token in persons]
-    person_list = []
-    for token in tmp_list:
-        if token in persons:
-            person_list.append(token)
-
-    if len(person_list) > 1:
-        relationship_dict[person_list[0]] = person_list[1]
-
-print(relationship_dict)
-"""

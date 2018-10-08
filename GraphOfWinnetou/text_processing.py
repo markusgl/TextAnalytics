@@ -7,8 +7,8 @@ import re
 import csv
 
 from nltk.tokenize import word_tokenize
-from network_graph import NetworkGraph
-from neo4j_graph import Neo4jGraph
+from GraphOfWinnetou.network_graph import NetworkGraph
+from GraphOfWinnetou.neo4j_graph import Neo4jGraph
 
 # read the book
 with open('./data/Winnetou_Band3.txt', 'r', encoding='utf-8') as f:

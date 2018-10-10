@@ -133,7 +133,7 @@ for i in range(len(tokenized_data)):
             tmp_substring = tokenized_data[i - substring_length:i] + tokenized_data[i:i + substring_length]
             search_persons(tmp_substring, found_person)
         elif i < len(tokenized_data)-1:
-            if tokenized_data[i]+tokenized_data[i+1] in value:
+            if tokenized_data[i] + tokenized_data[i+1] in value:
                 found_person = key
                 tmp_substring = tokenized_data[i - substring_length:i] + tokenized_data[i:i + substring_length]
                 search_persons(tmp_substring, found_person)
@@ -161,41 +161,50 @@ for i in range(len(tokenized_data)):
 #ng.draw_network()
 #print(relationship_dict)
 """
-with open('winnetou3_persons_new.csv', 'w', newline='') as csvfile:
-    writer = csv.writer(csvfile)
-
-    csv_list = []
-    for key, value in relationship_dict.items():
-        tmp_list = key.split('_')
-        tmp_list.append(str(value))
-        csv_list.append(tmp_list)
-
-    writer.writerows(csv_list)
-
-# Draw graph with networkx
-ng = NetworkGraph()
-with open('winnetou3_persons_new.csv', 'r', newline='') as csvfile:
-    reader = csv.reader(csvfile, delimiter=',')
-    for row in reader:
-        ng.add_edge(row[0], row[1], weight=int(row[2]))
-
-ng.draw_network()
 
 
-# Save graph in Neo4j
+# save results to csv file
+def save_to_csv(file_name):
+    with open(file_name, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
 
-neo4j_graph = Neo4jGraph()
-with open('winnetou3_persons_new.csv', 'r', newline='') as csvfile:
-    reader = csv.reader(csvfile, delimiter=',')
-    for row in reader:
-        first_node = neo4j_graph.get_node_by_name(str(row[0]))
-        second_node = neo4j_graph.get_node_by_name(str(row[1]))
+        csv_list = []
+        for key, value in relationship_dict.items():
+            tmp_list = key.split('_')
+            tmp_list.append(str(value))
+            csv_list.append(tmp_list)
 
-        if not first_node:
-            first_node = neo4j_graph.add_node_by_name(str(row[0]))
-        if not second_node:
-            second_node = neo4j_graph.add_node_by_name(str(row[1]))
-
-        neo4j_graph.add_relationship(first_node, second_node)
+        writer.writerows(csv_list)
 
 
+# draw graph with networkx
+def draw_graph(csv_file):
+    ng = NetworkGraph()
+    with open(csv_file, 'r', newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        for row in reader:
+            ng.add_edge(row[0], row[1], weight=int(row[2]))
+
+    ng.draw_network()
+
+
+# Save graph to neo4j database
+def save_csv_to_neo4j(csv_file):
+    neo4j_graph = Neo4jGraph()
+    with open(csv_file, 'r', newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        for row in reader:
+            first_node = neo4j_graph.get_node_by_name(str(row[0]))
+            second_node = neo4j_graph.get_node_by_name(str(row[1]))
+
+            if not first_node:
+                first_node = neo4j_graph.add_node_by_name(str(row[0]))
+            if not second_node:
+                second_node = neo4j_graph.add_node_by_name(str(row[1]))
+
+            neo4j_graph.add_relationship(first_node, second_node)
+
+
+file_name = 'test_graph.csv'
+save_to_csv(file_name)
+draw_graph(file_name)

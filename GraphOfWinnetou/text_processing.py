@@ -2,7 +2,6 @@
 Der Graph des Manitou
 """
 
-#import de_core_news_sm
 import re
 import csv
 
@@ -65,7 +64,7 @@ persons_dict = {'Alma': ['Alma'],
                 'Hi-Iah-dih': ['Hi-Iah-dih'],
                 'V.Hillmann': ['Vater Hillmann', 'alte Hillmann', 'Hillmann'],
                 'W.Hillmann': ['Willy', 'jungen Hillmann', 'junge Hillmann'],
-                'F.HillmannJung': ['Frau Willys'],
+                'Fr.HillmannJung': ['Frau Willys'],
                 'Hoblyn': ['Hoblyn'],
                 'Holfert': ['Holfert'],
                 'Inta': ['Inta'],
@@ -82,6 +81,7 @@ persons_dict = {'Alma': ['Alma'],
                 'Ohiamann': ['Ohiomann'],
                 'Ohlers': ['Ohlers'],
                 'OldShatterhand': ['Old Shatterhand'],
+                'OldFirehand': ['Old Firehand'],
                 'Pida': ['Pida'],
                 'PidasSquaw': ['Pidas Squaw'],
                 'Rudge': ['Rudge'],
@@ -102,70 +102,46 @@ persons_dict = {'Alma': ['Alma'],
 
 relationship_dict = {}
 tmp_list = []
-tokenized_data = word_tokenize(clean_data)
+tokenized_text = word_tokenize(clean_data)
 substring_length = 10
 
 
-def search_persons(tokenized_string, primary_person):
-    for i in range(len(tokenized_string)):
-        for key, value in persons_dict.items():
-            if tokenized_string[i] in value and key != primary_person:
-                dict_key = primary_person + '_' + key
-                if dict_key in relationship_dict.keys():
-                    relationship_dict[dict_key] += 1
-                else:
-                    relationship_dict[dict_key] = 1
-            elif i < len(tokenized_string)-1:
-                if tokenized_string[i] + tokenized_string[i + 1] in value and key != primary_person:
+def _search_persons(tokenized_string, primary_person=None):
+    for key, value in persons_dict.items():
+        for i, token in enumerate(tokenized_string):
+            if token in value and key != primary_person:
                     dict_key = primary_person + '_' + key
                     if dict_key in relationship_dict.keys():
                         relationship_dict[dict_key] += 1
                     else:
                         relationship_dict[dict_key] = 1
 
-# TODO recursive call
+            elif i < len(tokenized_string)-1:
+                    if tokenized_string[i] + ' ' + tokenized_string[i + 1] in value and key != primary_person:
+                        dict_key = primary_person + '_' + key
+                        if dict_key in relationship_dict.keys():
+                            relationship_dict[dict_key] += 1
+                        else:
+                            relationship_dict[dict_key] = 1
 
-print("Tokens: {}".format(len(tokenized_data)))
-for i in range(len(tokenized_data)):
+def process_text():
+    print("Tokens: {}".format(len(tokenized_text)))
     for key, value in persons_dict.items():
-        if tokenized_data[i] in value:
-            found_person = key
-            tmp_substring = tokenized_data[i - substring_length:i] + tokenized_data[i:i + substring_length]
-            search_persons(tmp_substring, found_person)
-        elif i < len(tokenized_data)-1:
-            if tokenized_data[i] + tokenized_data[i+1] in value:
+        for i, token in enumerate(tokenized_text):
+            if token in value:
                 found_person = key
-                tmp_substring = tokenized_data[i - substring_length:i] + tokenized_data[i:i + substring_length]
-                search_persons(tmp_substring, found_person)
-
-
-print(relationship_dict)
-
-
-#search through tokenized text - OLD VERSION iterate once through tokenized data
-"""
-for i in range(len(tokenized_data)):
-    if tokenized_data[i] in persons:
-        found_person = tokenized_data[i]
-        tmp_substring = tokenized_data[i-substring_length:i-1] + tokenized_data[i+1:i+substring_length]
-
-        for word in tmp_substring:
-            if word in persons and word != found_person:
-                #ng.add_edge(found_person, word) # add to networkx
-                dict_key = found_person + "_" + word
-                if dict_key in relationship_dict:
-                    relationship_dict[dict_key] += 1
-                else:
-                    relationship_dict[dict_key] = 1
-
-#ng.draw_network()
-#print(relationship_dict)
-"""
+                tmp_substring = tokenized_text[i - substring_length:i] + tokenized_text[i+1:i + substring_length]
+                _search_persons(tmp_substring, found_person)
+            elif i < len(tokenized_text)-1:
+                if tokenized_text[i] + ' ' + tokenized_text[i + 1] in value:
+                    found_person = key
+                    tmp_substring = tokenized_text[i - substring_length:i] + tokenized_text[i+1:i + substring_length]
+                    _search_persons(tmp_substring, found_person)
 
 
 # save results to csv file
 def save_to_csv(file_name):
-    with open(file_name, 'w', newline='') as csvfile:
+    with open(file_name, 'a', newline='') as csvfile:
         writer = csv.writer(csvfile)
 
         csv_list = []
@@ -202,9 +178,8 @@ def save_csv_to_neo4j(csv_file):
             if not second_node:
                 second_node = neo4j_graph.add_node_by_name(str(row[1]))
 
-            neo4j_graph.add_relationship(first_node, second_node)
+            neo4j_graph.add_relationship(first_node, second_node, weight=int(row[2]))
 
+    neo4j_graph.add_pagerank()
+    neo4j_graph.add_communites()
 
-file_name = 'test_graph.csv'
-save_to_csv(file_name)
-draw_graph(file_name)

@@ -115,7 +115,6 @@ def _search_persons(tokenized_string, primary_person=None):
                         relationship_dict[dict_key] += 1
                     else:
                         relationship_dict[dict_key] = 1
-
             elif i < len(tokenized_string)-1:
                     if tokenized_string[i] + ' ' + tokenized_string[i + 1] in value and key != primary_person:
                         dict_key = primary_person + '_' + key
@@ -123,6 +122,7 @@ def _search_persons(tokenized_string, primary_person=None):
                             relationship_dict[dict_key] += 1
                         else:
                             relationship_dict[dict_key] = 1
+
 
 def process_text():
     print("Tokens: {}".format(len(tokenized_text)))
@@ -182,4 +182,5 @@ def save_csv_to_neo4j(csv_file):
 
     neo4j_graph.add_pagerank()
     neo4j_graph.add_communites()
+
 

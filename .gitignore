@@ -112,3 +112,6 @@ blablub.py
 neo4j_creds.json
 
 neuralcoref/
+
+# word embedding models
+WordVectors/models

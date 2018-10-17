@@ -6,7 +6,8 @@ import numpy as np
 def train_word2vec(sentences):
     # start word embeddings training
     print("start training word2vec...")
-    model = Word2Vec(sentences, min_count=1)
+    # train word2vec model using skip-gram(sg=1)
+    model = Word2Vec(sentences, sg=1, size=100, window=5, min_count=5, workers=4)
     print("training completed")
     print("vocabulary length %i" % len(model.wv.vocab))
     model.save('models/w2vmodel.bin')

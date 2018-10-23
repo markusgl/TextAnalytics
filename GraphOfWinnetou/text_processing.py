@@ -1,5 +1,5 @@
 """
-Der Graph des Manitou
+The Graph des Winnetou
 """
 
 import re
@@ -26,8 +26,26 @@ for row in book_data.splitlines():
 clean_data = re.sub(r'\W', ' ', clean_data) # remove non-word characters
 clean_data = re.sub(r'\s{2,}', ' ', clean_data)  # remove two or more consecutive whitespaces
 
-#print(len(book_data))
-#print(len(clean_data))
+
+mult_word_names = ['Fred Buller', 'Gustel Ebersbach', 'Ebersbachs Gustel', 'Don Fernando', 'Donna Elvira de Gonzalez',
+                  'Donna Elvira', 'Elvira de Gonzalez', 'Sennor Henrico Gonzalez', 'Sennor Henrico', 'Henrico Gonzalez',
+                   'Samuel Haller', 'Sam Hawkens', 'Vater Hillmann', 'alte Hillmann', 'jungen Hillmann',
+                   'junge Hillmann', 'Frau Willys', 'Juwelier Marshall', 'Bernard Marshall', 'Bernard Marshall',
+                   'Bill Meinert', 'Fred Morgan', 'Patrik Morgan', 'Old Shatterhand', 'Old Firehand', 'Pidas Squaw',
+                   'Fred Walker']
+
+# replace the whitespaces inside names consisting of multiple words with underscores
+for name in mult_word_names:
+    tokens = word_tokenize(name)
+    replace_name = ""
+    for i, token in enumerate(tokens):
+        if i > 0:
+            replace_name += '-' + token
+        else:
+            replace_name += token
+
+    clean_data = re.sub(name, replace_name, clean_data)
+
 
 """
 Extract every names using NER
@@ -49,22 +67,22 @@ print(persons_set)
 # manually created list with persons
 persons_dict = {'Alma': ['Alma'],
                 'Bob': ['Bob'],
-                'Buller': ['Fred Buller', 'Buller'],
+                'Buller': ['Fred-Buller', 'Buller'],
                 'Capitano': ['Capitano'],
                 'Clay': ['Clay'],
                 'Conchez': ['Conchez'],
-                'Auguste': ['Gustel Ebersbach', 'Ebersbachs Gustel', 'Ebersbach'],
+                'Auguste': ['Gustel-Ebersbach', 'Ebersbachs-Gustel', 'Ebersbach'],
                 'Eulalia': ['Eulalia'],
-                'Fernando': ['Don Fernando'],
+                'Fernando': ['Don-Fernando'],
                 'Gates': ['Gates'],
-                'ElviraG.': ['Donna Elvira de Gonzalez', 'Donna Elvira', 'Elvira de Gonzalez'],
-                'HenricG.': ['Sennor Henrico Gonzalez', 'Sennor Henrico', 'Henrico Gonzalez'],
-                'Haller': ['Samuel Haller', 'Haller'],
-                'SamHawkens': ['Sam Hawkens', 'Sam', 'Sams'],
+                'ElviraG.': ['Donna-Elvira-de-Gonzalez', 'Donna-Elvira', 'Elvira-de-Gonzalez'],
+                'HenricG.': ['Sennor-Henrico-Gonzalez', 'Sennor-Henrico', 'Henrico-Gonzalez'],
+                'Haller': ['Samuel-Haller', 'Haller'],
+                'SamHawkens': ['Sam-Hawkens', 'Sam', 'Sams'],
                 'Hi-Iah-dih': ['Hi-Iah-dih'],
-                'V.Hillmann': ['Vater Hillmann', 'alte Hillmann', 'Hillmann'],
-                'W.Hillmann': ['Willy', 'jungen Hillmann', 'junge Hillmann'],
-                'Fr.HillmannJung': ['Frau Willys'],
+                'V.Hillmann': ['Vater-Hillmann', 'alte-Hillmann', 'Hillmann'],
+                'W.Hillmann': ['Willy', 'jungen-Hillmann', 'junge-Hillmann'],
+                'Fr.HillmannJung': ['Frau-Willys'],
                 'Hoblyn': ['Hoblyn'],
                 'Holfert': ['Holfert'],
                 'Inta': ['Inta'],
@@ -73,17 +91,18 @@ persons_dict = {'Alma': ['Alma'],
                 'Ko-itse': ['Ko-itse'],
                 'Ko-tu-cho': ['Ko-tu-cho'],
                 'Ma-ram': ['Ma-ram'],
-                'A.Marshall': ['Juwelier Marshall'],
-                'B.Marshall': ['Bernard Marshall', 'Bernard Marshall', 'Bernards', 'Marshall'],
-                'Ma-ti-ru': ['Ma-ti-ru'], 'B.Meinert': ['Bill Meinert'],
-                'F.Morgan': ['Fred Morgan', 'Morgan'],
-                'P.Morgan': ['Patrik Morgan'],
+                'A.Marshall': ['Juwelier-Marshall'],
+                'B.Marshall': ['Bernard-Marshall', 'Bernard-Marshall', 'Bernards', 'Marshall'],
+                'Ma-ti-ru': ['Ma-ti-ru'],
+                'B.Meinert': ['Bill-Meinert'],
+                'F.Morgan': ['Fred-Morgan', 'Morgan'],
+                'P.Morgan': ['Patrik-Morgan'],
                 'Ohiamann': ['Ohiomann'],
                 'Ohlers': ['Ohlers'],
-                'OldShatterhand': ['Old Shatterhand'],
-                'OldFirehand': ['Old Firehand'],
+                'OldShatterhand': ['Old-Shatterhand', 'Shatterhand'],
+                'OldFirehand': ['Old-Firehand'],
                 'Pida': ['Pida'],
-                'PidasSquaw': ['Pidas Squaw'],
+                'PidasSquaw': ['Pidas-Squaw'],
                 'Rudge': ['Rudge'],
                 'Sanchez': ['Sanchez'],
                 'Sans-ear': ['Sans-ear'],
@@ -94,7 +113,7 @@ persons_dict = {'Alma': ['Alma'],
                 'Tangua': ['Tangua'],
                 'Til-Lata': ['Til-Lata'],
                 'To-kei-chun': ['To-kei-chun'],
-                'F.Walker': ['Fred Walker', 'Walker'],
+                'F.Walker': ['Fred-Walker', 'Walker'],
                 'Williams': ['Williams'],
                 'Winnetou': ['Winnetou'],
                 'Yato-Ka': ['Yato-Ka']
@@ -115,13 +134,6 @@ def _search_persons(tokenized_string, primary_person=None):
                         relationship_dict[dict_key] += 1
                     else:
                         relationship_dict[dict_key] = 1
-            elif i < len(tokenized_string)-1:
-                    if tokenized_string[i] + ' ' + tokenized_string[i + 1] in value and key != primary_person:
-                        dict_key = primary_person + '_' + key
-                        if dict_key in relationship_dict.keys():
-                            relationship_dict[dict_key] += 1
-                        else:
-                            relationship_dict[dict_key] = 1
 
 
 def process_text():
@@ -132,16 +144,11 @@ def process_text():
                 found_person = key
                 tmp_substring = tokenized_text[i - substring_length:i] + tokenized_text[i+1:i + substring_length]
                 _search_persons(tmp_substring, found_person)
-            elif i < len(tokenized_text)-1:
-                if tokenized_text[i] + ' ' + tokenized_text[i + 1] in value:
-                    found_person = key
-                    tmp_substring = tokenized_text[i - substring_length:i] + tokenized_text[i+1:i + substring_length]
-                    _search_persons(tmp_substring, found_person)
 
 
 # save results to csv file
 def save_to_csv(file_name):
-    with open(file_name, 'a', newline='') as csvfile:
+    with open(file_name, 'a+', newline='') as csvfile:
         writer = csv.writer(csvfile)
 
         csv_list = []
@@ -184,3 +191,5 @@ def save_csv_to_neo4j(csv_file):
     neo4j_graph.add_communites()
 
 
+process_text()
+save_to_csv('winnetou3_new.csv')

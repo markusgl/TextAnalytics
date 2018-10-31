@@ -153,9 +153,10 @@ def save_to_csv(file_name):
 
         csv_list = []
         for key, value in relationship_dict.items():
-            tmp_list = key.split('_')
-            tmp_list.append(str(value))
-            csv_list.append(tmp_list)
+            if value > 2:  # only weights over 2 will be recognized as interaction
+                tmp_list = key.split('_')
+                tmp_list.append(str(value))
+                csv_list.append(tmp_list)
 
         writer.writerows(csv_list)
 
@@ -192,4 +193,4 @@ def save_csv_to_neo4j(csv_file):
 
 
 process_text()
-save_to_csv('winnetou3_new.csv')
+save_to_csv('winnetou3_highranking.csv')

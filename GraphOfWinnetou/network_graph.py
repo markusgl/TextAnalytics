@@ -1,6 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-
+from networkx import nx_pydot
 
 class NetworkGraph:
     def __init__(self):
@@ -17,7 +17,8 @@ class NetworkGraph:
         e_small = [(u, v) for (u, v, d) in self.graph.edges(data=True) if d['weight'] <= 3]
         e_middle = [(u, v) for (u, v, d) in self.graph.edges(data=True) if d['weight'] <= 6]
         e_large = [(u, v) for (u, v, d) in self.graph.edges(data=True) if d['weight'] > 6]
-        pos = nx.spring_layout(self.graph)  # positions for all nodes
+        #pos = nx.spring_layout(self.graph)  # positions for all nodes
+        pos = nx.nx_pydot.graphviz_layout(self.graph, prog='dot')
 
         # nodes
         nx.draw_networkx_nodes(self.graph, pos, node_size=200)

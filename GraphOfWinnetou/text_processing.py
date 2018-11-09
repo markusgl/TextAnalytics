@@ -4,10 +4,15 @@ The Graph des Winnetou
 
 import re
 import csv
+import os
 
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.tag import StanfordNERTagger
 from GraphOfWinnetou.network_graph import NetworkGraph
 from GraphOfWinnetou.neo4j_graph import Neo4jGraph
+
+java_path = "C:/Program Files/Java/jdk1.8.0_181/bin/java.exe"
+os.environ['JAVAHOME'] = java_path
 
 # read the book
 with open('./data/Winnetou_Band3.txt', 'r', encoding='utf-8') as f:
@@ -60,8 +65,23 @@ for sentence in sent_tokenize(clean_data):
             persons_set.add(ent.text)
 
 # TODO Test if Stanford NER works better
-print(len(persons_set))
-print(persons_set)
+model = 'models/dewac_175m_600.crf.ser.gz'
+# model = 'models/hgc_175m_600.crf.ser.gz'
+st_ner = StanfordNERTagger(model,
+                            'models/stanford-ner.jar',
+                            encoding='utf-8')
+person_set = set()
+for sentence in sent_tokenize(book_data):
+    classified = st_ner.tag(sentence)
+
+    for entity in classified:
+        entity_text = entity[0]
+        entity_label = entity[1]
+        if entity_label == 'I-PER':
+            person_set.add(entity_text)
+
+print(len(person_set))
+print(person_set)
 """
 
 # manually created list with persons

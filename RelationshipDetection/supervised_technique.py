@@ -143,5 +143,3 @@ if __name__ == '__main__':
     #print(result)
     nltk.download('averaged_perceptron_tagger')
     print(ie_preprocess(utterance4))
-
-from nltk.chunk.regexp import RegexpParser

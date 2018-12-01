@@ -1,30 +1,35 @@
 import json
+import os
+
 from py2neo import Graph, Node, Relationship, NodeMatcher
 from igraph import Graph as IGraph
 
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 class Neo4jGraph:
-    def __init__(self, path='neo4j_creds.json'):
+    def __init__(self):
+        path = os.path.realpath(ROOT_DIR + '/neo4j_creds.json')
         with open(path) as f:
             data = json.load(f)
         username = data['username']
         password = data['password']
         self.graph = Graph(host="localhost", username=username, password=password)
 
-    def add_node_by_name(self, name):
-        node = Node("Character", name=name)
+    def add_node_by_name(self, name, node_type="Character"):
+        node = Node(node_type, name=name)
         self.graph.create(node)
 
         return node
 
     def get_node_by_name(self, name):
         matcher = NodeMatcher(self.graph)
-        node = matcher.match('Character', name=name).first()
+        node = matcher.match(name=name).first()
 
         return node
 
-    def add_relationship(self, from_person, to_person, weight):
-        self.graph.create(Relationship(from_person, "INTERACTS", to_person, weight=int(weight)))
+    def add_relationship(self, from_person, to_person, weight, name="INTERACTS"):
+        self.graph.create(Relationship(from_person, name, to_person, weight=int(weight)))
 
     def add_pagerank(self):
         """
@@ -32,7 +37,7 @@ class Neo4jGraph:
         """
 
         query = '''
-        MATCH (c1:Character)-[r:INTERACTS]->(c2:Character)
+        MATCH (c1:)-[r:INTERACTS]->(c2:)
         RETURN c1.name, c2.name, r.weight AS weight
         '''
         ig = IGraph.TupleList(self.graph.run(query), weights=True)
@@ -45,7 +50,7 @@ class Neo4jGraph:
 
         write_clusters_query = '''
         UNWIND {nodes} AS n
-        MATCH (c:Character) WHERE c.name = n.name
+        MATCH (c:) WHERE c.name = n.name
         SET c.pagerank = n.pg
         '''
 
@@ -57,7 +62,7 @@ class Neo4jGraph:
         """
 
         query = '''
-        MATCH (c1:Character)-[r:INTERACTS]->(c2:Character)
+        MATCH (c1:)-[r:INTERACTS]->(c2:)
         RETURN c1.name, c2.name, r.weight AS weight
         '''
         ig = IGraph.TupleList(self.graph.run(query), weights=True)
@@ -71,9 +76,12 @@ class Neo4jGraph:
 
         write_clusters_query = '''
         UNWIND {nodes} AS n
-        MATCH (c:Character) WHERE c.name = n.name
+        MATCH (c:) WHERE c.name = n.name
         SET c.community = toInt(n.community)
         '''
 
         self.graph.run(write_clusters_query, nodes=nodes)
 
+
+    def get_direct_neighbours(self, node):
+        self.graph.match()

@@ -6,6 +6,7 @@ from flair.models import SequenceTagger
 
 # load the NER tagger
 tagger = SequenceTagger.load('ner')
+named_entities = []
 
 
 def tag_person_entities(text):
@@ -15,7 +16,7 @@ def tag_person_entities(text):
     # iterate over entities and print
     # NER Spans
     for entity in sentence.get_spans('ner'):
-        print(entity)
+        named_entities.append(entity)
 
     # NER Tags for each word
     #for token in sentence:
@@ -33,3 +34,5 @@ with open('../RelationshipDetection/data/'+file_name+'.txt', 'r', encoding='utf-
 
 for line in sent_tokenize(data):
     tag_person_entities(line)
+
+print(named_entities)

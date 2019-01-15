@@ -18,8 +18,11 @@ def tag_person_entities(raw_text):
     print('\n##### NER SPANS #####')
     # NER Spans
     for entity in sentence.get_spans('ner'):
-        named_entities.append(entity)
         print(entity)
+        if len(entity.tokens) > 1:
+            named_entities.append(str(entity).replace(' ', '_'))
+        else:
+            named_entities.append(entity)
 
     print('\n##### TAG EACH TOKEN #####')
     # NER Tags for each word
@@ -43,8 +46,12 @@ def ner_book_data(filename):
 text = 'Hans Müller und sein Sohn Hubert fliegen nach New York. '
 text2 = u'Meine kleine Enkelin Lisa und mein Enkel Lukas fliegen morgen nach London.'
 text3 = u'''Hans, welcher der Sohn von Hubert ist, geht mit Peter ins Kino.'''
+multiline_text = u'''Bart, welcher der Sohn von Homer ist, geht mit Milhouse ins Kino.
+Meine kleine Enkelin Lisa und mein Enkel Bart fliegen morgen nach London. Ned Flanders ist der Vater von Rod und Todd.'''
+text = multiline_text
 
 tag_person_entities(text)
+
 #ner_book_data('Robinson_Crusoe')
 
-#print(named_entities)
+print(named_entities)

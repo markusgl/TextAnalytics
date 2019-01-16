@@ -119,3 +119,4 @@ RelationshipDetection/data
 WordVectors/models
 
 NLPPlayground/blub.py
+tools/simpsons_extraction.py

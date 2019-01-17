@@ -7,7 +7,7 @@ from nltk.tokenize import sent_tokenize
 conv_start = "»"
 conv_end = "«"
 
-file_name = 'Robinson_Crusoe'
+file_name = 'Winnetou_Band1'
 with open('../RelationshipDetection/data/' + file_name + '.txt', 'r', encoding='utf-8') as f:
     raw_book_data = f.read()
 
@@ -20,7 +20,7 @@ headerlines_count = 0
 clean_data = ''
 for row in book_data.splitlines():
     if headerlines_count > n:
-        clean_data += str(row + ' ')
+        clean_data += str(row)
     headerlines_count += 1
 
 out_file = file_name + '_conversations'
@@ -30,4 +30,4 @@ with open('../RelationshipDetection/data/' + out_file + '.txt', 'w', encoding='u
         if conv_start and conv_end in sentence:
             sentence = sentence.replace(conv_start, '')
             sentence = sentence.replace(conv_end, '')
-            f.write(sentence)
+            f.write(sentence + '\n')

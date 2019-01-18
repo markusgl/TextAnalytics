@@ -4,37 +4,50 @@ import pandas as pd
 
 from pprint import pprint
 
-with open('../data/data_intermediate.json', 'r') as f:
-    data = json.load(f)
 
-#print(type(data))
-#pprint(data)
+def extract_human_conversations(df, persist=False):
+    # save all human conversations as continuous text
+    human_conv = df.loc[df['sender'] == 'Human']
 
-df_columns = ['sender', 'text']
-df = pd.DataFrame(columns=df_columns)
+    corpus = ""
+    for row in human_conv['text']:
+        # print(row)
+        corpus += row.replace('\n', '') + ' '
 
-for row in data:
-    for dialog in row['dialog']:
-        sender = dialog['sender_class']
-        text = dialog['text']
+    if persist:
+        with open('../data/human_dialog.txt', 'w') as f:
+            f.write(corpus)
 
-        # remove unicode characters
-        text = re.sub(r'[^\x00-\x7F]', ' ', text)
+    return corpus
 
-        data = {'sender': sender, 'text': text}
-        df = df.append(data, ignore_index=True)
 
-print(df.head())
+def dataframe_from_json(data):
+    df_columns = ['sender', 'text']
+    df = pd.DataFrame(columns=df_columns)
 
-# save all human conversations as continuous text
-human_conv = df.loc[df['sender'] == 'Human']
+    for row in data:
+        for dialog in row['dialog']:
+            sender = dialog['sender_class']
+            text = dialog['text']
 
-corpus = ""
-for row in human_conv['text']:
-    #print(row)
-    corpus += row.replace('\n', '') + ' '
+            # remove unicode characters
+            text = re.sub(r'[^\x00-\x7F]', ' ', text)
 
-print(corpus)
+            data = {'sender': sender, 'text': text}
+            df = df.append(data, ignore_index=True)
 
-with open('../data/human_dialog.txt', 'w') as f:
-    f.write(corpus)
+    return df
+
+
+def load_json(file_path):
+    with open(file_path, 'r') as f:
+        data = json.load(f)
+
+    return data
+
+
+load_json('../data/convai/data_intermediate.json')
+
+
+
+

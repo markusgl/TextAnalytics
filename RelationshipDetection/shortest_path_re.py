@@ -39,6 +39,31 @@ def create_flair_embeddings(text):
     return flair_embeddings
 
 
+
+from flair.data import Sentence
+from flair.models import SequenceTagger
+
+def extract_entities(raw_sentence):
+    entities = []
+
+    clean_sentence = re.sub('\W+', ' ', raw_sentence)  # remove non-word characters
+    sentence = Sentence(clean_sentence)
+    tagger = SequenceTagger.load('de-ner')
+    tagger.predict(sentence)  # run NER over sentence
+
+    # NER spans
+    print('Trying to extract entities...')
+
+    for entity in sentence.get_spans('ner'):
+        print(f'Entity: {entity}')
+
+        if entity.tag == 'PER':
+            if len(entity.tokens) > 1:  # if it is a multi word entity, replace blanks with underscores
+                entities.append(str(entity.text.lower()).replace(' ', '_'))
+            else:
+                entities.append(entity.text.lower())
+
+
 def extract_features(sp_dict):
     feature_columns = ['m1', 'm2', 'short_path']
     features = pd.DataFrame(columns=feature_columns)

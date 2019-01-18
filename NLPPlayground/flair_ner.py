@@ -43,13 +43,15 @@ def ner_book_data(filename):
     print(named_entities)
 
 
-text = 'Hans Müller und sein Sohn Hubert fliegen nach New York. '
-text2 = u'Meine kleine Enkelin Lisa und mein Enkel Lukas fliegen morgen nach London.'
-text3 = u'''Hans, welcher der Sohn von Hubert ist, geht mit Peter ins Kino.'''
+utterance1 = 'Hans Müller und sein Sohn Hubert fliegen nach New York. '
+utterance2 = u'Meine kleine Enkelin Lisa und mein Enkel Lukas fliegen morgen nach London.'
+utterance3 = u'''Hans, welcher der Sohn von Hubert ist, geht mit Peter ins Kino.'''
+utterance4 = u'''Meine Schwester lebt in Hamburg.'''
+utterance5 = u'''Meine Schwester Lisa lebt in Hamburg.'''
 multiline_text = u'''Bart, welcher der Sohn von Homer ist, geht mit Milhouse ins Kino.
 Meine kleine Enkelin Lisa und mein Enkel Bart fliegen morgen nach London. Ned Flanders ist der Vater von Rod und Todd.'''
-text = multiline_text
 
+text = utterance4
 tag_person_entities(text)
 
 #ner_book_data('Robinson_Crusoe')

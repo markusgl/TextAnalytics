@@ -23,9 +23,9 @@ def tag_person_entities(sentence):
     doc = nlp(sentence)
 
     entities = []
-    #for token in doc:
-    #    if token.text.lower() in me_list or token.text.lower() in relationship_list:
-    #        entities.append(token.text.lower())
+    for token in doc:
+        if token.text.lower() in me_list:
+            entities.append(token.text.lower())
 
     for ent in doc.ents:
         if ent.label_ == 'PERSON':
@@ -123,10 +123,9 @@ def measure_similarity(path_dict):
     return relations
 
 
-def write_to_file(out_file, sentence, relation):
+def write_to_file(out_file, out_data):
     with open(out_file, 'a', encoding='utf-8') as f:
-        line = str(sentence) + '; ' + str(relation) + '\n'
-        f.write(line)
+        f.write(out_data)
 
 
 def extract_relations(text):
@@ -137,9 +136,9 @@ def extract_relations(text):
         entities = tag_person_entities(sentence)
 
         if len(entities) > 1:  # two or more persons found in sentence
-            print(f'Entities found: {entities}')
+            #print(f'Entities found: {entities}')
             paths = search_shortest_dep_path(entities, sentence)
-            print(paths)
+            #print(paths)
             if paths:
                 relations = measure_similarity(paths)
                 for rel in relations:
@@ -160,14 +159,18 @@ def extract_relations(text):
     return extracted_relations
 
 
-def extract_rels_from_convai(in_file):
+def extract_rels_from_convai(in_file, out_file):
+    out_data = ''
     with open(in_file, 'r', encoding='utf-8') as f:
         for line in f.readlines():
             extracted = extract_relations(line)
+            line = line.replace("\n", ";")
             if extracted:
-                write_to_file('data/extracted_relations.txt', line, extracted)
+                out_data += f'{line} {extracted}\n'
             else:
-                write_to_file('data/extracted_relations.txt', line, 'No relations found')
+                out_data += f'{line} No relations found\n'
+
+    write_to_file(out_file, out_data)
 
 
 utterance = u'''I have a son, he is 16 years old, and my dad, he is retired now.'''
@@ -177,5 +180,6 @@ utterance3 = u'''And my husband is a doctor I play in Baltimore Yeah.'''
 utterance4 = u'''Peter and his brother Paul are walking to the beach.'''
 utterance5 = u'''Peter, Steve and his brother Paul are walking to the beach.'''
 
-extract_rels_from_convai('data/convai/human_rel_sentences.txt')
+extract_rels_from_convai('data/convai/human_rel_sentences.txt', 'data/extracted_relations_new.txt')
 
+#extract_relations(utterance1)

@@ -3,32 +3,38 @@ import re
 import spacy
 
 from nltk.tokenize import word_tokenize
-nlp = spacy.load('de')
+nlp = spacy.load('en')
 grammar = r"""
             PP: {<PRON><AUX><DET><ADJ>?<NOUN>}
-            NP: {<DET><ADJ>?<NOUN><PROPN>*}            
+            NP: {<DET><ADJ>?<NOUN><PROPN>}            
             REL: {<PP>|<NP>}"""
 
 grammar_en = r"""
-            PP: {<PRON><VERB><DET><ADJ>?<NOUN>}
-            NP: {<DET><ADJ>?<NOUN><PROPN>*}            
+            PP: {<PRON><VERB><DET>?<ADJ>?<NOUN>}
+            NP: {<ADJ><ADJ>?<NOUN><PROPN>?}            
             REL: {<PP>|<NP>}"""
 
-
+"""
 relationship_list = ['vater', 'mutter', 'papa', 'papi', 'mama', 'mami', 'sohn', 'tochter', 'bruder', 'schwester',
                      'enkel', 'enkelin', 'nichte', 'neffe', 'großvater', 'großmutter', 'opa', 'opa',
                      'onkel', 'tante', 'cousin', 'cousine', 'schwager', 'schwägerin', 'Mann', 'Frau']
 me_list = ['ich', 'mich', 'meine', 'meiner', 'mein']
+"""
+
+relationship_list = ['father', 'mother', 'dad', 'daddy', 'mom', 'mommy', 'son', 'daughter', 'brother', 'sister',
+                     'grandchild', 'grandson', 'granddaughter', 'grandfather', 'grandmother',
+                     'grampa', 'grandpa', 'grandma', 'niece', 'nephew', 'uncle', 'aunt', 'cousin'
+                                                                                         'brother-in-law',
+                     'sister-in-law', 'husband', 'wife']
+me_list = ['i', 'my']
 
 
 def search_rel_type(sentence):
-    rel_type = False
-
     for token in word_tokenize(sentence):
         if token.lower() in relationship_list:
-            rel_type = True
+            return token.lower()
 
-    return rel_type
+    return None
 
 
 def pos_tag_sentence(sentence):
@@ -40,26 +46,29 @@ def pos_tag_sentence(sentence):
         pos_tuple = (token.text, token.pos_)
         pos_tagged_sentence.append(pos_tuple)
 
+    #print(pos_tagged_sentence)
     return pos_tagged_sentence
 
 
 def chunk_sentence(pos_tagged_sentence):
-    cp = nltk.RegexpParser(grammar)
+    cp = nltk.RegexpParser(grammar_en)
     result = cp.parse(pos_tagged_sentence)
+    #print(f'Chunk: {result}')
 
+    result.draw()
     return result
 
 
 def extract_rel(sentence):
     me = None
-    relative = None
 
-    if search_rel_type(sentence):
-        chunk = chunk_sentence(pos_tag_sentence(sentence))
+    relative = search_rel_type(sentence)
+    if relative:
+        chunk_tree = chunk_sentence(pos_tag_sentence(sentence))
 
-        if chunk[0][0][0][0].lower() in me_list:
-            me = chunk[0][0][0][0]
-            relative = chunk[0][0][-1][0]
+        for i, sub_tree in enumerate(chunk_tree):
+            if type(sub_tree) is nltk.tree.Tree and sub_tree.label() == 'REL':
+                me = sub_tree[0][0][0]
 
     return me, relative
 
@@ -80,7 +89,9 @@ negative_text6 = u'''Ich habe drei Kinder'''
 
 # EN
 positive_text1_en = u'''My little sister'''
-positive_text2_en = u'''I have an older brother'''
+positive_text2_en = u'''I've an older brother'''
+positive_text3_en = u'''My daughter Lisa lives in Berlin'''
+positive_text4_en = u'''My daughter Lisa is moving to London next month.'''
 
 negative_text1_en = u'''her brother'''
 negative_text2_en = u'''his father John'''
@@ -88,6 +99,7 @@ negative_text2_en = u'''his father John'''
 sentences_pos = [positive_text1, positive_text2, positive_text3, positive_text4, positive_text5]
 sentences_neg = [negative_text1, negative_text2, negative_text3, negative_text4, negative_text5, negative_text6]
 
+"""
 print('## Positive')
 for sentence in sentences_pos:
     print(extract_rel(sentence))
@@ -95,4 +107,7 @@ for sentence in sentences_pos:
 print('\n## Negative')
 for sentence in sentences_neg:
     print(extract_rel(sentence))
+"""
+me, rel = extract_rel(positive_text4_en)
+print(me, rel)
 

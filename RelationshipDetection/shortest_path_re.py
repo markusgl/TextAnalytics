@@ -1,106 +1,58 @@
-import enum
 import networkx as nx
 import spacy
-import matplotlib.pyplot as plt
 import logging
-import pandas as pd
-import numpy as np
-import re
+import matplotlib.pyplot as plt
 
 from networkx.exception import NodeNotFound, NetworkXNoPath
 from gensim.models import KeyedVectors
-from nltk.tokenize import sent_tokenize, word_tokenize
-from flair.data import Sentence, Token
-from flair.embeddings import WordEmbeddings
+from nltk.tokenize import sent_tokenize
 
-nlp = spacy.load('de')
-model = KeyedVectors.load_word2vec_format('../models/german.model', binary=True)
+from RelationshipDetection.lex_analyzer import LexAnalyzer
 
+nlp = spacy.load('en')
+model = KeyedVectors.load_word2vec_format('../../Data/word_embeddings/GoogleNews-vectors-negative300.bin',
+                                          binary=True, limit=30000)
 
-relationship_list = ['vater', 'mutter', 'sohn', 'tochter', 'bruder', 'schwester', 'enkel', 'enkelin', 'nichte',
-                     'neffe', 'onkel', 'tante']
-me_list = ['ich', 'meine', 'mein', 'meiner', 'meinem', 'meinen']
-
-
-def create_flair_embeddings(text):
-    flair_embeddings = {}
-    for sentence in sent_tokenize(text):
-        sentence = re.sub(r'\W', ' ', sentence)
-        sentence = re.sub(r'\s{2,}', ' ', sentence)
-
-        sentence = Sentence(sentence.lower())
-        glove_embedding = WordEmbeddings('de')
-        # glove_embedding = WordEmbeddings('de-crawl')
-        glove_embedding.embed(sentence)
-
-        for token in sentence:
-            flair_embeddings[token.text] = token.embedding
-
-    return flair_embeddings
+relationship_list = ['father', 'mother', 'dad', 'daddy', 'mom', 'son', 'daughter', 'brother', 'sister',
+                     'grandchild', 'grandson', 'granddaughter', 'grandfather', 'grandmother',
+                     'niece', 'nephew', 'uncle', 'aunt', 'cousin', 'husband', 'wife']
+me_list = ['i', 'my']
 
 
+def tag_person_entities(sentence):
+    doc = nlp(sentence)
 
-from flair.data import Sentence
-from flair.models import SequenceTagger
-
-def extract_entities(raw_sentence):
     entities = []
+    #for token in doc:
+    #    if token.text.lower() in me_list or token.text.lower() in relationship_list:
+    #        entities.append(token.text.lower())
 
-    clean_sentence = re.sub('\W+', ' ', raw_sentence)  # remove non-word characters
-    sentence = Sentence(clean_sentence)
-    tagger = SequenceTagger.load('de-ner')
-    tagger.predict(sentence)  # run NER over sentence
+    for ent in doc.ents:
+        if ent.label_ == 'PERSON':
+            entities.append(ent.text.lower())
 
-    # NER spans
-    print('Trying to extract entities...')
-
-    for entity in sentence.get_spans('ner'):
-        print(f'Entity: {entity}')
-
-        if entity.tag == 'PER':
-            if len(entity.tokens) > 1:  # if it is a multi word entity, replace blanks with underscores
-                entities.append(str(entity.text.lower()).replace(' ', '_'))
-            else:
-                entities.append(entity.text.lower())
+    return entities
 
 
-def extract_features(sp_dict):
-    feature_columns = ['m1', 'm2', 'short_path']
-    features = pd.DataFrame(columns=feature_columns)
+def build_undirected_graph(sentence, plot=False):
+    doc = nlp(sentence)
+    edges = []
+    for token in doc:
+        for child in token.children:
+            edges.append((f'{token.lower_}',
+                          f'{child.lower_}'))
+    graph = nx.Graph(edges)
+    di_graph = nx.DiGraph(edges)
 
-    for key, value in sp_dict.items():
-        m1 = key.split('-')[0]
-        m2 = key.split('-')[1]
-        short_path = value
+    if plot:
+        plot_graph(di_graph)
 
-        data = {'m1': m1, 'm2': m2, 'short_path': short_path}
-
-        training_example = pd.Series(data, index=feature_columns)
-        features = features.append(training_example, ignore_index=True)
-
-    return features
-
-
-def find_shortest_path(entities, graph):
-    sp_dict = {}
-    for i, first_entity in enumerate(entities):
-        for j in range(i + 1, len(entities)):
-            second_entity = entities[j]
-            if not i == j and second_entity not in me_list:
-                try:
-                    shortest_path = nx.shortest_path(graph, source=first_entity, target=second_entity)
-                    key = first_entity + '-' + second_entity
-                    sp_dict[key] = shortest_path
-                except NodeNotFound as err:
-                    logging.warning(f'Node not found: {err}')
-                except NetworkXNoPath as err:
-                    logging.warning(f'No path found: {err}')
-
-    return sp_dict
+    return graph
 
 
 def plot_graph(graph):
-    pos = nx.spring_layout(graph)
+    # nx.draw_networkx(graph, node_size=100, ode_color=range(len(graph)))
+    pos = nx.spring_layout(graph)  # positions for all nodes
     # nodes
     nx.draw_networkx_nodes(graph, pos, node_size=200)
     # edges
@@ -112,38 +64,118 @@ def plot_graph(graph):
     plt.show()
 
 
-def build_undirected_graph(doc):
-    edges = []
-    for token in doc:
-        for child in token.children:
-            edges.append((f'{token.lower_}',
-                          f'{child.lower_}'))
+def search_shortest_dep_path(entities, sentence):
+    path_dict = {}
+    graph = build_undirected_graph(sentence, plot=False)
 
-    graph = nx.Graph(edges)
-    plot_graph(graph)
+    for i, first_entity in enumerate(entities):
+        first_entity = first_entity.split('_')[0]  # use only first name of multi-word entities
 
-    return graph
+        #for j in range(len(entities)):  # bidirectional relations
+        for j in range(i+1, len(entities)):  # unidirectional relations
+            second_entity = entities[j]
+            second_entity = second_entity.split('_')[0]  # use only first name of multi-word entities
+
+            if not i == j and second_entity not in me_list:
+                try:
+                    shortest_path = nx.shortest_path(graph, source=first_entity, target=second_entity)
+                    key = first_entity + '-' + second_entity
+                    if len(shortest_path[1:-1]) > 0:
+                        # path_dict[key] = shortest_path  # include entities in sp
+                        path_dict[key] = shortest_path[1:-1]  # exclude entities in sp
+                    else:
+                        path_dict[key] = ['KNOWS']
+                        #return None
+                except NodeNotFound as err:
+                    logging.warning(f'Node not found: {err}')
+                except NetworkXNoPath as err:
+                    logging.warning(f'No path found: {err}')
+
+    return path_dict
 
 
-def recognize_named_entities(doc):
-    entities = []
-    for ent in doc.ents:
-        if ent.label_ == 'PER':
-            entities.append(ent.text.lower())
+def measure_similarity(path_dict):
+    relations = []
+    for key, value in path_dict.items():
+        if 'KNOWS' in value:
+            relation = key, 'KNOWS'
+        else:
+            highest_score = 0
+            highest_rel = None
 
-    for token in doc:
-        if token.text.lower() in me_list:
-            entities.append(token.text.lower())
+            for rel in relationship_list:
+                try:
+                    score = model.n_similarity(value, [rel])
 
-    return entities
+                    if score > highest_score:
+                        highest_score = score
+                        highest_rel = rel
+                except KeyError as err:
+                    logging.warning(err)
+
+            if highest_score == 0:
+                relation = key, 'KNOWS'
+            else:
+                relation = key, highest_rel
+
+        relations.append(relation)
+
+    return relations
 
 
-def extract_relationships(text):
+def write_to_file(out_file, sentence, relation):
+    with open(out_file, 'a', encoding='utf-8') as f:
+        line = str(sentence) + '; ' + str(relation) + '\n'
+        f.write(line)
+
+
+def extract_relations(text):
+    extracted_relations = []
+
     for sentence in sent_tokenize(text):
-        doc = nlp(sentence)
-        graph = build_undirected_graph(doc)
-        entities = recognize_named_entities(doc)
-        sp_dict = find_shortest_path(entities, graph)
-        extract_features(sp_dict)
+       # print(f'##> Processing sentence: "{sentence}"')
+        entities = tag_person_entities(sentence)
 
+        if len(entities) > 1:  # two or more persons found in sentence
+            print(f'Entities found: {entities}')
+            paths = search_shortest_dep_path(entities, sentence)
+            print(paths)
+            if paths:
+                relations = measure_similarity(paths)
+                for rel in relations:
+                    relation_type = rel[1]
+
+                    if relation_type:
+                        e1 = rel[0].split('-')[0]
+                        e2 = rel[0].split('-')[1]
+                        extracted_relation = str(f'<{e1, relation_type, e2}>')
+                        extracted_relations.append(extracted_relation)
+        else:
+            # Lexanalyzer
+            lex = LexAnalyzer()
+            extracted_relation = lex.extract_rel(sentence)
+            if extracted_relation:
+                extracted_relations.append(extracted_relation)
+
+    return extracted_relations
+
+
+def extract_rels_from_convai(in_file):
+    with open(in_file, 'r', encoding='utf-8') as f:
+        for line in f.readlines():
+            extracted = extract_relations(line)
+            if extracted:
+                write_to_file('data/extracted_relations.txt', line, extracted)
+            else:
+                write_to_file('data/extracted_relations.txt', line, 'No relations found')
+
+
+utterance = u'''I have a son, he is 16 years old, and my dad, he is retired now.'''
+utterance1 = u'''My daughter Lisa is moving to London next month.'''
+utterance2 = u'''I've a son, he is in junior high school what are you doing for life?'''
+utterance3 = u'''And my husband is a doctor I play in Baltimore Yeah.'''
+utterance4 = u'''Peter and his brother Paul are walking to the beach.'''
+utterance5 = u'''Peter, Steve and his brother Paul are walking to the beach.'''
+
+extract_rels_from_convai('data/convai/human_rel_sentences.txt')
 

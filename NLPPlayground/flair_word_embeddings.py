@@ -20,21 +20,23 @@ glove_embedding = WordEmbeddings('de')
 #glove_embedding = WordEmbeddings('de-crawl')
 glove_embedding.embed([sentence, sentence2])
 
+
+
+
 tensors = []
 for token in sentence:
-    print(token)
-    print(token.embedding)
     if token.text == 'kino':
         tensors.append(token.embedding)
 
 for token in sentence2:
-    print(token)
-    print(token.embedding)
     if token.text == 'kino':
         tensors.append(token.embedding)
 
 # compute equality of tensors
+
 for i in range(len(tensors)):
     for j in range(len(tensors)):
-        print(torch.eq(tensors[i], tensors[j]))
+        print(torch.equal(tensors[i], tensors[j]))
+        
+
 

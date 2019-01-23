@@ -15,11 +15,10 @@ relationship_list_de = ['vater', 'mutter', 'papa', 'papi', 'mama', 'mami', 'sohn
 
 relationship_list = ['father', 'mother', 'dad', 'daddy', 'mom', 'mommy', 'son', 'daughter', 'brother', 'sister',
                      'grandchild', 'grandson', 'granddaughter', 'grandfather', 'grandmother',
-                     'grampa', 'grandpa', 'grandma', 'niece', 'nephew', 'uncle', 'aunt', 'cousin'
-                                                                                         'brother-in-law',
+                     'grampa', 'grandpa', 'grandma', 'niece', 'nephew', 'uncle', 'aunt', 'cousin', 'brother-in-law',
                      'sister-in-law', 'husband', 'wife']
 
-nlp = spacy.load('en_core_web_sm')
+nlp = spacy.load('en')
 
 
 def extract_human_conversations(df, persist=False):
@@ -56,6 +55,35 @@ def generate_dataframe_from_json(data):
     return df
 
 
+def extract_dialog_data(data):
+    corp = ''
+    for row in data:
+        for dialog in row['dialog']:
+            text = dialog['text']
+
+            # remove unicode characters
+            text = re.sub(r'[^\x00-\x7F]', ' ', text)
+            if text:
+                corp += text + '\n'
+
+    return corp
+
+
+def extract_dialogs_from_training_data(json_data):
+    corp = ''
+    for row in json_data:
+        for dialog in row['dialog']:
+            text = dialog['text']
+
+            # remove unicode characters
+            text = re.sub(r'[^\x00-\x7F]', '', text)
+            if text:
+                corp += text + '\n'
+
+    with open('../data/convai/export_dialogs.txt', 'a') as f:
+        f.write(corp)
+
+
 def load_json(file_path):
     with open(file_path, 'r') as f:
         data = json.load(f)
@@ -68,9 +96,12 @@ def named_entity_tagger_spacy(corpus):
 
     for sentence in sent_tokenize(corpus):
         doc = nlp(sentence)
-        #for ent in doc.ents:
-        #    if ent.label_ == 'PERSON':
-        #        entity_sentences.append(sentence)
+
+        # check if either a person or a social relation appear within the sentence
+        for ent in doc.ents:
+            if ent.label_ == 'PERSON':
+                entity_sentences.append(sentence)
+                break
 
         for token in doc:
             if token.text.lower() in relationship_list:
@@ -80,7 +111,7 @@ def named_entity_tagger_spacy(corpus):
     return entity_sentences
 
 
-def named_entity_tagger(corpus):
+def named_entity_tagger_flair(corpus):
     entity_sentences = []
 
     #for line in sent_tokenize(corpus):
@@ -101,11 +132,20 @@ def named_entity_tagger(corpus):
     return entity_sentences
 
 
-data = load_json('../data/convai/data_tolokers.json')
-dataframe = generate_dataframe_from_json(data)
-corp = extract_human_conversations(dataframe)
-ent_sentences = named_entity_tagger_spacy(corp)
+def write_to_file(out_file, data):
+    with open(out_file, 'a', encoding='utf-8') as f:
+        for item in data:
+            f.write(item + '\n')
 
-with open('../data/convai/human_rel_sentences.txt', 'a', encoding='utf-8') as f:
-    for item in ent_sentences:
-        f.write(item + '\n')
+
+#data = load_json('../data/convai/data_tolokers.json')
+#dataframe = generate_dataframe_from_json(data)
+#corp = extract_human_conversations(dataframe)
+#ent_sentences = named_entity_tagger_spacy(corp)
+
+
+data = load_json('../data/convai/data_volunteers.json')
+corp = extract_dialog_data(data)
+ent_sentences = named_entity_tagger_spacy(corp)
+write_to_file('../data/convai/human-bot-conversations-with-relations.txt', ent_sentences)
+

@@ -9,7 +9,7 @@ relationship_list = ['father', 'mother', 'dad', 'daddy', 'mom', 'son', 'daughter
                      'niece', 'nephew', 'uncle', 'aunt', 'cousin', 'husband', 'wife']
 me_list = ['i', 'my']
 
-# PP: e.g. 'I have a son', 'I have a smaller brother'
+# PP: e.g. 'I have a son', 'I have a smaller brother', 'I have a 9 year old son'
 # NP: e.g. 'My (little) sister (Lisa)'
 grammar = r"""
             PP: {<PRON><VERB><DET><ADJ>?<NOUN>}

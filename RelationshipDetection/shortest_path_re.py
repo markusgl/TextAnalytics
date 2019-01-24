@@ -2,6 +2,7 @@ import networkx as nx
 import spacy
 import logging
 import matplotlib.pyplot as plt
+import re
 
 from networkx.exception import NodeNotFound, NetworkXNoPath
 from gensim.models import KeyedVectors
@@ -25,6 +26,7 @@ def extract_person_entities(sentence):
     :param sentence:
     :return:
     """
+    sentence = re.sub('\s{2,}', ' ', sentence)  # delete multiple consecutive spaces
     doc = nlp(sentence)
     entities = []
 
@@ -41,6 +43,7 @@ def extract_me_rel_entities(sentence):
     :param sentence:
     :return:
     """
+    sentence = re.sub('\s{2,}', ' ', sentence)  # delete multiple consecutive spaces
     doc = nlp(sentence)
     entities = []
     rel = False
@@ -157,13 +160,13 @@ def extract_relation_type(sp_dict, me_rel=False):
         e2 = key.split('-')[1]
         if len(value) > 0 and not me_rel:
             rel = measure_sp_rel_similarity(value)
-            extracted_relation = str(f'<{e1, rel, e2}>')
+            extracted_relation = e1, rel, e2
         elif e2 in relationship_list:
-            extracted_relation = str(f'<{e1, e2}>')
+            extracted_relation = e1, e2
         elif e1 in relationship_list:
-            extracted_relation = str(f'<{e2, e1}>')
+            extracted_relation = e2, e1
         else:
-            extracted_relation = str(f'<{e1},KNOWS, {e2}>')
+            extracted_relation = e1, 'KNOWS', e2
 
         extracted_relations.append(extracted_relation)
 
@@ -179,10 +182,11 @@ def extract_relations(text):
         me_rel_entities = extract_me_rel_entities(sentence)
 
         if len(person_entities) > 1:  # PER-PER
-            #print(f'Entities found: {entities}')
+            logging.info(f'Extracted entities: {person_entities}')
             paths = search_shortest_dep_path(person_entities, sentence)
             extracted_relations = extract_relation_type(paths)
         elif len(person_entities) > 0 and len(me_rel_entities) > 0:  # USER-PER
+            logging.info(f'Extracted entities: {person_entities + me_rel_entities}')
             paths = search_shortest_dep_path(me_rel_entities + person_entities, sentence)
             extracted_relations = extract_relation_type(paths)
         elif len(me_rel_entities) > 1:  # USER-REL
@@ -208,24 +212,25 @@ def extract_relations(text):
             #    extracted_relations.append(extracted_relation)
 
         else:
-            print('no relations found')
+            logging.info('no relations found')
 
     return extracted_relations
 
 
 def extract_rels_from_convai(in_file, out_file):
     out_data = ''
-    n = 0
+    line_count = 0
+    limit = 1000
     with open(in_file, 'r', encoding='utf-8') as f:
         for line in f.readlines():
-            if n < 100:
+            if line_count < limit:
                 extracted = extract_relations(line)
                 line = line.replace("\n", ";")
                 if extracted:
                     out_data += f'{line} {extracted}\n'
                 else:
                     out_data += f'{line} No relations found\n'
-                n += 1
+                line_count += 1
             else:
                 break
 
@@ -241,14 +246,16 @@ utterance5 = u'''Peter, Steve and his brother Paul are walking to the beach.'''
 utterance6 = u'''Me my angel twin sister love singing'''
 utterance7 = u'''Hi my name is James'''
 utterance8 = u'''i've a 9 year old son as well .'''
-
+utterance9 = u'''Anna and her brother Max are going to School'''
+utterance10 = u'''i'm a call of duty girl i cant wait for the new one my younger brother Tom and his sister jessica is a cod player too .'''
 
 example_utterances = [utterance0, utterance1, utterance2, utterance3, utterance4, utterance5, utterance6, utterance7,
                       utterance8]
-#extract_rels_from_convai(in_file='data/ConvAI2/extracted_conversations.txt',
-#                         out_file='data/ConvAI2/extracted_relations.txt')
 
-print(extract_relations(utterance1))
+extract_rels_from_convai(in_file='data/ConvAI2/validation_set.txt',
+                         out_file='data/ConvAI2/validation_set_extracted_relations_final.txt')
+
+#print(extract_relations(utterance10))
 
 
 #for utterance in example_utterances:

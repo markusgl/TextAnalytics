@@ -1,4 +1,5 @@
-### LexAnalyzer
+## LexAnalyzer based on ReVerb (Etzioni et al. 2008)
+
 import spacy
 import re
 import nltk
@@ -39,10 +40,12 @@ class LexAnalyzer:
 
         return pos_tagged_sentence
 
-    def chunk_sentence(self, pos_tagged_sentence):
+    def chunk_sentence(self, pos_tagged_sentence, draw=False):
         cp = nltk.RegexpParser(grammar)
         result = cp.parse(pos_tagged_sentence)
-        #result.draw()
+
+        if draw:
+            result.draw()
 
         return result
 
@@ -61,15 +64,8 @@ class LexAnalyzer:
 
                     if sub_tree[0][-1][1] == 'PROPN':
                         rel_person = sub_tree[0][-1][0]
-                        extracted_relations.append(f'<{me}, {relation[0]}, {rel_person}>')
+                        extracted_relations.append(f'<USER, {relation[0]}, {rel_person}>')
                     else:
-                        extracted_relations.append(f'<{me}, {relation[0]}>')
+                        extracted_relations.append(f'<USER, {relation[0]}>')
 
         return extracted_relations
-
-
-#if __name__ == '__main__':
-#    utterance = u'''I have a son, he is 16 years old, and my dad, he is retired now.'''
-#    utterance = u'''My brother John.'''
-#    lex = LexAnalyzer()
-#    print(lex.extract_rel(utterance))

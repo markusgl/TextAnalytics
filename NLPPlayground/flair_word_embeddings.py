@@ -21,8 +21,6 @@ glove_embedding = WordEmbeddings('de')
 glove_embedding.embed([sentence, sentence2])
 
 
-
-
 tensors = []
 for token in sentence:
     if token.text == 'kino':
@@ -38,5 +36,3 @@ for i in range(len(tensors)):
     for j in range(len(tensors)):
         print(torch.equal(tensors[i], tensors[j]))
         
-
-

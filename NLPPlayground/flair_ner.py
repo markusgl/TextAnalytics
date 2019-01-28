@@ -6,7 +6,8 @@ from flair.data import Sentence
 from flair.models import SequenceTagger
 
 # load the NER tagger
-tagger = SequenceTagger.load('de-ner')
+#tagger = SequenceTagger.load('de-ner')  #DE
+tagger = SequenceTagger.load('ner')  #EN
 named_entities = []
 
 
@@ -20,9 +21,9 @@ def tag_person_entities(raw_text):
     for entity in sentence.get_spans('ner'):
         print(entity)
         if len(entity.tokens) > 1:
-            named_entities.append(str(entity).replace(' ', '_'))
+            named_entities.append(str(entity.text).replace(' ', '_'))
         else:
-            named_entities.append(entity)
+            named_entities.append(entity.text)
 
     print('\n##### TAG EACH TOKEN #####')
     # NER Tags for each word
@@ -50,9 +51,10 @@ utterance4 = u'''Meine Schwester lebt in Hamburg.'''
 utterance5 = u'''Meine Schwester Lisa lebt in Hamburg.'''
 multiline_text = u'''Bart, welcher der Sohn von Homer ist, geht mit Milhouse ins Kino.
 Meine kleine Enkelin Lisa und mein Enkel Bart fliegen morgen nach London. Ned Flanders ist der Vater von Rod und Todd.'''
+utterance6 = u'''my younger brother tom and his sister lisa simpson is a cod player too.'''
 
-text = utterance4
-tag_person_entities(text)
+
+tag_person_entities(utterance6)
 
 #ner_book_data('Robinson_Crusoe')
 

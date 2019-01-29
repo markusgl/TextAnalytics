@@ -1,3 +1,7 @@
+"""
+Extracts only human conversations from original ConvAI2 training corpora
+"""
+
 import json
 import re
 import pandas as pd
@@ -37,6 +41,20 @@ def extract_human_conversations(df, persist=False):
     return corpus
 
 
+def extract_all_dialog_data(data):
+    corpus = ''
+    for row in data:
+        for dialog in row['dialog']:
+            text = dialog['text']
+
+            # remove unicode characters
+            text = re.sub(r'[^\x00-\x7F]', ' ', text)
+            if text:
+                corpus += text + '\n'
+
+    return corpus
+
+
 def generate_dataframe_from_json(data):
     df_columns = ['sender', 'text']
     df = pd.DataFrame(columns=df_columns)
@@ -53,20 +71,6 @@ def generate_dataframe_from_json(data):
             df = df.append(data, ignore_index=True)
 
     return df
-
-
-def extract_dialog_data(data):
-    corp = ''
-    for row in data:
-        for dialog in row['dialog']:
-            text = dialog['text']
-
-            # remove unicode characters
-            text = re.sub(r'[^\x00-\x7F]', ' ', text)
-            if text:
-                corp += text + '\n'
-
-    return corp
 
 
 def extract_dialogs_from_training_data(json_data):
@@ -91,7 +95,7 @@ def load_json(file_path):
     return data
 
 
-def named_entity_tagger_spacy(corpus):
+def named_entity_tagger_spacy(corpus, extract_rels=False):
     entity_sentences = []
 
     for sentence in sent_tokenize(corpus):
@@ -103,10 +107,11 @@ def named_entity_tagger_spacy(corpus):
                 entity_sentences.append(sentence)
                 break
 
-        for token in doc:
-            if token.text.lower() in relationship_list:
-                entity_sentences.append(sentence)
-                break
+        if extract_rels:
+            for token in doc:
+                if token.text.lower() in relationship_list:
+                    entity_sentences.append(sentence)
+                    break
 
     return entity_sentences
 
@@ -138,14 +143,8 @@ def write_to_file(out_file, data):
             f.write(item + '\n')
 
 
-#data = load_json('../data/convai/data_tolokers.json')
-#dataframe = generate_dataframe_from_json(data)
-#corp = extract_human_conversations(dataframe)
-#ent_sentences = named_entity_tagger_spacy(corp)
-
-
 data = load_json('../data/convai/data_volunteers.json')
-corp = extract_dialog_data(data)
+corp = extract_all_dialog_data(data)
 ent_sentences = named_entity_tagger_spacy(corp)
-write_to_file('../data/convai/human-bot-conversations-with-relations.txt', ent_sentences)
+write_to_file('../data/convai_processed/extracted-conversations-with-relations_persons.txt', ent_sentences)
 

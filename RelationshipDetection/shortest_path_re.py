@@ -277,9 +277,11 @@ utterance9 = u'''Maria and her brother Max are going to School'''
 utterance10 = u'''i'm a call of duty girl i cant wait for the new one my younger brother Tom and his sister Jessica is a cod player too .'''
 utterance11 = u'''My younger brother tom and his sister lisa simpson are cod player.'''
 utterance12 = u'Meine kleine Enkelin Lisa und mein Enkel Lukas fliegen morgen nach London.'
+utterance13 = u'''Hey, y'know, Mon, if things wrong out between you and Richard's son, you'd be able to tell your kids, that you slept with their grandfather.'''
 
 example_utterances = [utterance0, utterance1, utterance2, utterance3, utterance4, utterance5, utterance6, utterance7,
                       utterance8, utterance9, utterance10, utterance11]
 #run_example_utterances(example_utterances)
 
-print(extract_relations(utterance12))
+print(extract_relations(utterance13))
+

@@ -10,6 +10,8 @@ relationship_list = ['father', 'mother', 'dad', 'daddy', 'mom', 'son', 'daughter
                      'grandchild', 'grandson', 'granddaughter', 'grandfather', 'grandmother',
                      'niece', 'nephew', 'uncle', 'aunt', 'cousin', 'husband', 'wife']
 
+me_list = ['i', 'me', 'my']
+
 
 def export_conversations():
     data = pd.read_csv('../data/Friends_TV_Corpus/friends-final.txt', sep='\t')
@@ -17,9 +19,10 @@ def export_conversations():
     conversations.to_csv('../data/Friends_TV_Corpus/friends_conversations.txt', header=None, index=None, sep=' ', mode='a')
 
 
-def tag_person_entities(line):
+def tag_person_entities(line):  # PER-PER  ME-PER
     for sentence in sent_tokenize(line):
         count_persons = 0
+        count_me = 0
         doc = nlp(sentence)
 
         for ent in doc.ents:
@@ -30,16 +33,21 @@ def tag_person_entities(line):
             return True
         else:
             for token in sent_tokenize(sentence):
-                if token in relationship_list:
-                    return True
-            return False
+                if token in me_list:
+                    count_me += 1
+
+        if count_me > 0 and count_persons > 0:
+            return True
+
+        return False
 
 
 person_convs = ''
-with open('../data/Friends_TV_Corpus/friends_conversations.txt', 'r') as f:
+with open('../data/simpsons_conversations.txt', 'r', encoding='utf-8') as f:
     for line in f.readlines():
         if tag_person_entities(line):
+            line = line.replace('"', '')
             person_convs += line
 
-with open('../data/Friends_TV_Corpus/friends_conversation_lines_with_mult_persons_or_rels.txt', 'a') as f:
+with open('../data/validation/training_set/simpsons_training_per-per_me-per.txt', 'a', encoding='utf-8') as f:
     f.write(person_convs)

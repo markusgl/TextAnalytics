@@ -20,7 +20,7 @@ me_list =['i', 'me', 'my']
 
 def write_file(text):
     # out file
-    with open('../data/validation/training_set/persona-chat_training_me-per_per-per.txt', 'a') as f:
+    with open('../data/validation/persona-chat_conversations.txt', 'a') as f:
         f.write(text)
 
 
@@ -57,12 +57,19 @@ def search_entity_or_relation(sentence, extract_rels=False):
 
 # in file
 with open('../data/ConvAI2/train_none_original_no_cands.txt', 'r') as f:
-    data = f.readlines()
     count = 0
-    min_val = 5000
-    max_val = 10000
+    min_val = 0
+    max_val = 100000
 
-    for line in data:
+    for line in f.readlines():
+        line = re.sub('\s{2,}', ' ', line)
+        line = line[2:]
+        line = line.replace('__SILENCE__', '')
+        if len(line) > 3:
+            write_file(line)
+
+        """
+        
         if count == max_val:
             break
         elif count >= min_val:
@@ -70,9 +77,12 @@ with open('../data/ConvAI2/train_none_original_no_cands.txt', 'r') as f:
             line = re.sub('\s{2,}', ' ', line)
             line = line[2:]
             line = line.replace('__SILENCE__', '')
-            for sentence in sent_tokenize(line):
-                search_entity_or_relation(sentence, extract_rels=False)
+            if len(line) > 3:
+                write_file(line)
+            #for sentence in sent_tokenize(line):
+            #    search_entity_or_relation(sentence, extract_rels=False)
 
         count += 1
+        """
 
 

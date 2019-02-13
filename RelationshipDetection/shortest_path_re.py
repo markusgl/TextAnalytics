@@ -25,7 +25,7 @@ relationship_list = ['father', 'mother', 'dad', 'daddy', 'mom', 'son', 'daughter
                      'niece', 'nephew', 'uncle', 'aunt', 'cousin', 'husband', 'wife']
 me_list = ['i', 'my']
 #tagger = SequenceTagger.load('ner')  #EN
-tagger = SequenceTagger.load('de-ner')  #EN
+tagger = SequenceTagger.load('de-ner')  #DE
 
 
 def extract_pronoun_entities(text):

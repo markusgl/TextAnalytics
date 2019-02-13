@@ -6,8 +6,8 @@ from flair.data import Sentence
 from flair.models import SequenceTagger
 
 # load the NER tagger
-#tagger = SequenceTagger.load('de-ner')  #DE
-tagger = SequenceTagger.load('ner')  #EN
+tagger = SequenceTagger.load('de-ner')  #DE
+#tagger = SequenceTagger.load('ner')  #EN
 named_entities = []
 
 
@@ -52,9 +52,9 @@ utterance5 = u'''Meine Schwester Lisa lebt in Hamburg.'''
 multiline_text = u'''Bart, welcher der Sohn von Homer ist, geht mit Milhouse ins Kino.
 Meine kleine Enkelin Lisa und mein Enkel Bart fliegen morgen nach London. Ned Flanders ist der Vater von Rod und Todd.'''
 utterance6 = u'''my younger brother tom and his sister lisa simpson is a cod player too.'''
+utterance7 = u'''Victoria is the grandma of Lisa'''
 
-
-tag_person_entities(utterance6)
+tag_person_entities(utterance2)
 
 #ner_book_data('Robinson_Crusoe')
 

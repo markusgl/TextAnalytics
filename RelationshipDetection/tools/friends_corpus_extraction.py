@@ -16,7 +16,7 @@ me_list = ['i', 'me', 'my']
 def export_conversations():
     data = pd.read_csv('../data/Friends_TV_Corpus/friends-final.txt', sep='\t')
     conversations = data['line']
-    conversations.to_csv('../data/Friends_TV_Corpus/friends_conversations.txt', header=None, index=None, sep=' ', mode='a')
+    conversations.to_csv('../data/Friends_TV_Corpus/friends_conversations_new.txt', header=None, index=None, sep=' ', mode='a')
 
 
 def tag_person_entities(line):  # PER-PER  ME-PER
@@ -41,7 +41,9 @@ def tag_person_entities(line):  # PER-PER  ME-PER
 
         return False
 
+export_conversations()
 
+"""
 person_convs = ''
 with open('../data/simpsons_conversations.txt', 'r', encoding='utf-8') as f:
     for line in f.readlines():
@@ -51,3 +53,4 @@ with open('../data/simpsons_conversations.txt', 'r', encoding='utf-8') as f:
 
 with open('../data/validation/training_set/simpsons_training_per-per_me-per.txt', 'a', encoding='utf-8') as f:
     f.write(person_convs)
+"""

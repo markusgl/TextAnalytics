@@ -119,3 +119,4 @@ RelationshipDetection/data
 WordVectors/models
 
 NLPPlayground/blub.py
+QuestionAnswering/flair_text_classifier/models

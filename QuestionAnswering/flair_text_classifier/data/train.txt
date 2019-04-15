@@ -1,0 +1,7 @@
+__label__ablauf welche anwesenheitspflicht habe ich?
+__label__ablauf wie lange dauert der kurs
+__label__pers ich bin schwanger schaffe ich den kurs
+__label__pers ich bin berufstätig schaffe ich den kurs
+__label__pers ich habe zwei kinder schaffe ich den kurs trotzdem
+__label__ablauf kann ich die ausbildung auch nach dem studium machen
+__label__ablauf welche maximale dauer hat der kurs

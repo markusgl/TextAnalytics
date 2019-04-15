@@ -1,0 +1,21 @@
+{
+  "rasa_nlu_data": {
+    "common_examples": [
+      {
+        "text": "Warum ist die Sonne gelb",
+        "intent": "grund",
+        "entities": []
+      },
+      {
+        "text": "Was ist ein Prisma",
+        "intent": "definition",
+        "entities": []
+      },
+      {
+        "text": "Wie heißt die Hauptstadt von Deutschland",
+        "intent": "ort",
+        "entities": []
+      }
+    ]
+  }
+}

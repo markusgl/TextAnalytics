@@ -26,7 +26,7 @@ def write_file(text):
 
 def search_entity_or_relation(sentence, extract_rels=False):
     """
-    checks if at least two persons or on relations appears within a sentence
+    checks if at least two persons or one relation appears within a sentence
     :param sentence:
     :param extract_rels:
     :return:

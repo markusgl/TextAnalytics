@@ -1,5 +1,8 @@
 import spacy
+import os
+
 from spacy import displacy
+from pathlib import Path
 
 nlp = spacy.load('en')
 #text = u'Barack Obama is married to Michele Obama.'
@@ -20,10 +23,13 @@ utterance16 = u'My daughter Lisa is moving to London next month.'
 utterance15 = u'Peter is the father of Tom.'
 utterance17 = u'''Tom's sister Lisa lives in London now.'''
 utterance18 = u'''Peter, Tom's father, is a lawyer.'''
-utterance19 = u"Monica is Ross's sister, right?"
+utterance19 = u'''Monica is Ross's sister, right?'''
 utterance20 = u'''He's Angela's... brother.'''
 utterance21 = u'''I prefer the morning flight through Denver'''
 
-text = utterance21
+text = utterance12
 doc = nlp(text)
-displacy.serve(doc, style='dep', options={'compact': False})
+displacy.serve(doc, style='dep', options={'compact': True})
+svg = displacy.render(doc, style='dep', options={'compact': True})
+output_path = Path(os.path.join("./", "protesters.svg"))
+output_path.open('w', encoding="utf-8").write(svg)

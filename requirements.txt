@@ -69,7 +69,7 @@ neo4j-driver==1.6.2
 neotime==1.0.0
 networkx==2.2
 -e git+https://github.com/huggingface/neuralcoref.git@8c266c4ec9a5532c4998a85a21fbf2bbfc3b1485#egg=neuralcoref
-nltk==3.4.5
+nltk==3.6.5
 numpy==1.15.2
 packaging==18.0
 pandas==0.23.4

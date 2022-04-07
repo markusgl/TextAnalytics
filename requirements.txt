@@ -70,7 +70,7 @@ neotime==1.0.0
 networkx==2.2
 -e git+https://github.com/huggingface/neuralcoref.git@8c266c4ec9a5532c4998a85a21fbf2bbfc3b1485#egg=neuralcoref
 nltk==3.6.5
-numpy==1.15.2
+numpy==1.21.0
 packaging==18.0
 pandas==0.23.4
 parso==0.3.1

@@ -133,7 +133,7 @@ tqdm==4.26.0
 traitlets==4.3.2
 Twisted==22.2.0
 typing==3.6.4
-ujson==1.35
+ujson==5.4.0
 Unidecode==1.0.23
 urllib3==1.26.5
 wcwidth==0.1.7
